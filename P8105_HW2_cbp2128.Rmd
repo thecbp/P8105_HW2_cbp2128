@@ -89,3 +89,15 @@ ada_compliant_A_trains = sum(serves_A$is_ada == TRUE)
 ```
 
 The number of distinct stations that serve the A train is `r nrow(serves_A)`, and the number of them that are compliant is `r ada_compliant_A_trains`. Uh oh.
+
+# Problem 2 
+
+This problem asks us to read and clean the Mr. Trash Wheel data set.
+
+![Actual Picture of Me](./me_but_im_mr_trash.jpg)
+
+```{r P2_data_loading }
+trash = read_xlsx('./data/P2/water_wheel.xlsx',
+                  range = "A2:N213") # Read in only data, not notes
+```
+
