@@ -96,8 +96,23 @@ This problem asks us to read and clean the Mr. Trash Wheel data set.
 
 ![Actual Picture of Me](./me_but_im_mr_trash.jpg)
 
-```{r P2_data_loading }
-trash = read_xlsx('./data/P2/water_wheel.xlsx',
+```{r P2_trash_data_loading }
+raw_trash_data = read_xlsx('./data/P2/water_wheel.xlsx',
                   range = "A2:N213") # Read in only data, not notes
 ```
+
+`raw_trash_data` is worthy of its namesake. The data has some summary rows that give the cumulative monthly amounts after a month finishes. The other rows detail trash amounts given by daily amounts. Finally, there's some other formatting issues we'd like to take care of with the quantitative data (there's no such thing as 6.2 sports balls).
+
+
+```{r P2_data_tidying }
+tidy_trash_data = raw_trash_data %>% 
+  janitor::clean_names() %>% 
+  filter(., !is.na(.$dumpster)) %>% 
+  mutate(sports_balls_int = as.integer(sports_balls)) %>% 
+  select(., everything(), -sports_balls)
+kable(tidy_trash_data)
+```
+
+Next, we need to import and start cleaning the precipitation data from 2016 and 2017. These data sets originally came in two separate sheets, so they will need to be combined later on. Like the trash data, there are some rows that need to be removed since some data are missing in the 2017 precipitation data.
+
 
