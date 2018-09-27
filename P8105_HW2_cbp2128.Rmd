@@ -30,10 +30,9 @@ tidy_nyc_data = raw_nyc_data %>%
   janitor::clean_names() %>% 
   gather(data = ., key = route_number, value = route_served, route1:route11, na.rm = TRUE) %>% 
   mutate(can_enter = ifelse(entry == "YES", TRUE, FALSE),
-         has_vending = ifelse(vending == "YES", TRUE, FALSE),
-         is_ada = ada) %>% 
+         has_vending = ifelse(vending == "YES", TRUE, FALSE)) %>% 
   select(., station_name, line, route_served, station_latitude, station_longitude, 
-         entrance_type, can_enter, has_vending, is_ada) %>% 
+         entrance_type, can_enter, has_vending, is_ada = ada) %>% 
   distinct(., station_name, line, route_served, .keep_all = TRUE) %>%
   arrange(., station_name, line) 
 ```
@@ -44,27 +43,49 @@ tidy_nyc_data = raw_nyc_data %>%
 
 The ending result keeps the station and line information, and each route has its own row. Other station information such as the station location, entrance type, ADA status has been kept. Customers who may need to figure out if they can even enter a particular station or purchase a Metro Card can use the corresponding Boolean columns.
 
-The original dataset had `r nrow(raw_nyc_data)` rows and `r ncol(raw_nyc_data)` columns, while the processed dataset has been reduced to `r nrow(tidy_nyc_data)` rows and `r ncol(tidy_nyc_data)` columns. The data is now in tidy form.
+The original dataset had `r nrow(raw_nyc_data)` rows and `r ncol(raw_nyc_data)` columns, while the processed dataset has been reduced to `r nrow(tidy_nyc_data)` rows and `r ncol(tidy_nyc_data)` columns. Some stations are seen multiple times if they house different lines or serve multiple routes. The data is now in tidy form.
 
 ## NYC Transit Data Inquiry
 
-* How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St A/B/C/D; 125st 1; 125st 4/5); the distinct function may be useful here.
+### How many distinct stations are there?
 
-If each station is identified by the station and line, then we can use the `distinct()` function again to figure out how many unique station-line values there are.
+If each station is identified by the station and line, then we can use the `distinct()` function again. A station is stated to be uniquely identifiable by a station-line combination, so we'll make sure that we remove duplicates based on both of these columns.
 
 ```{r P1_Q1_answer }
 distinct_stations = tidy_nyc_data %>% 
-  select(., station_name, line) %>% 
-  mutate(station_line = paste(station_name, line)) %>% 
-  distinct(., station_line)
+  distinct(., station_name, line, .keep_all = TRUE)
 ```
 
-`distinct_stations` tells us that there are `r nrow(distinct_stations)` distinct stations. However, if we 
+`distinct_stations` tells us that there are `r nrow(distinct_stations)` distinct stations.
 
-* How many stations are ADA compliant?
-* What proportion of station entrances / exits without vending allow entrance?
-* Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? How many are ADA compliant?
+### How many stations are ADA compliant?
 
+Using the `is_ada` column, we can inquire how many of the stations are ADA compliant. Since we need to look at distinct stations, we can use the same code from above and just count how many rows in `is_ada` are `TRUE`.
 
+```{r P1_Q2_answer }
+are_ada_compliant = sum(distinct_stations$is_ada)
+```
 
-## bindrows lets you stack datasets on top of each other
+`r are_ada_compliant` distinct stations are ADA compliant.
+
+### What proportion of station entrances / exits without vending allow entrance?
+
+We are asked to calculate the proportion of station entrances that allow entrance, given that they don't have vending. We can calculate this from our `distinct_stations` dataset.
+
+```{r P1_Q3_answer }
+without_vending = filter(distinct_stations, distinct_stations$has_vending == FALSE)
+is_enterable = sum(without_vending$can_enter == TRUE)
+```
+
+The proportion of stations without vending that allow entrance is `r is_enterable/nrow(without_vending)`.
+
+### How many distinct stations serve the A train? How many of them ADA compliant?
+
+I didn't read far enough ahead to realize that I was supposed to be gathering the routes into their own column, so the reformatting has already been done.
+
+```{r P1_Q4_answer }
+serves_A = filter(distinct_stations, route_served == "A")
+ada_compliant_A_trains = sum(serves_A$is_ada == TRUE)
+```
+
+The number of distinct stations that serve the A train is `r nrow(serves_A)`, and the number of them that are compliant is `r ada_compliant_A_trains`. Uh oh.
