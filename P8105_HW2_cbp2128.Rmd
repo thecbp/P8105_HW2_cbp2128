@@ -133,19 +133,18 @@ These data sets originally came in two separate sheets, so they will need to be 
 ```{r}
 tidy_precip_2016 = precip_2016 %>% 
   janitor::clean_names() %>% 
-  mutate(year = "2016",
+  mutate(year = 2016,
          month = month.name) %>% 
   select(., year, month, total)
 
 tidy_precip_2017 = precip_2017 %>% 
   janitor::clean_names() %>% 
-  mutate(year = "2017",
+  mutate(year = 2017,
          month = month.name) %>% 
   filter(., !is.na(.$total)) %>% 
   select(., year, month, total)
 
 tidy_precipitation = bind_rows(tidy_precip_2016, tidy_precip_2017)
-kable(tidy_precipitation)
 ```
 
 The end result is a tidy dataset that even Mr. Trash can be proud of.
@@ -156,3 +155,26 @@ In its initial form, the Mr. Trash Wheel dataset had `r nrow(raw_trash_data)` ro
 
 In the beginning the 2016 precipitation dataset had `r nrow(precip_2016)` rows, and the 2017 dataset had `r nrow(precip_2017)` rows. After all the data cleaning and manipulation, the resulting preciptation data is `r nrow(tidy_precipitation)` rows and has more descriptive `year` and `month` descriptions. The `total` column gives us the amount of precipitation on a given `year` and `month`.
 
+### What was the total precipitation in 2017? 
+
+First, we need to properly selec the 2017 data from the dataset.
+
+```{r P2_question_1_answer_1 }
+just_2017_precip = tidy_precipitation %>% 
+  filter(., year == 2017) %>% 
+  select(., total)
+```
+
+`tidy_precipitation` tells us that `r sum(just_2017_precip$total)` inches of rain fell in 2017, given the data that was present for that year.
+
+### What was the median number of sports balls in a dumpster in 2016?
+
+As above, we need to isolate the data for 2016 in `tidy_trash_data`.
+
+```{r P2_question_1_answer_2 }
+just_2016_sports_balls = tidy_trash_data %>% 
+  filter(., year == 2016) %>% 
+  select(., sports_balls_int)
+```
+
+`tidy_trash_data` tells us that the median amount of sports balls in a dumpster in 2016 was `r median(just_2016_sports_balls$sports_balls_int)`.
