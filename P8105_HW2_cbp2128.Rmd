@@ -5,12 +5,13 @@ output: github_document
 
 # Preliminary imports
 
-We need to practice our data wrangling and tidying skills, in addition to importing different types of data. Thus, we'll bring in `tidyverse` and `readxl`.
+We need to practice our data wrangling and tidying skills, in addition to importing different types of data. Thus, we'll bring in `tidyverse` and `readxl`. For Problem 3, we need the `p8105.datasets` package.
 
 ```{r lib_import, message = FALSE }
 library(tidyverse)
 library(readxl)
 library(knitr)
+library(p8105.datasets)
 ```
 
 # Problem 1
@@ -178,3 +179,25 @@ just_2016_sports_balls = tidy_trash_data %>%
 ```
 
 `tidy_trash_data` tells us that the median amount of sports balls in a dumpster in 2016 was `r median(just_2016_sports_balls$sports_balls_int)`.
+
+# Problem 3
+
+In order to load the BRFSS dataset without actually downloading it onto our computers, we needed to install the `p8105.datasets` package. From there, we can get the BRFSS data.
+
+```{r P3_data_loading }
+raw_BRFSS = p8105.datasets::brfss_smart2010
+```
+
+The BRFSS data is quite large and there's some formatting that needs to be done to get it into a more inquiry-able form. We need to exclude some columns for "class, topic, question, sample size, and everything from lower confidence limit to GeoLocation". Response questions need to be formatted, and we need a new proportion variable based on these responses.
+
+```{r P3_data_tidying }
+tidy_BRFSS = raw_BRFSS %>% 
+  filter(., Topic == "Overall Health") %>% 
+  select(., -Class, -Topic, -Question, -Sample_Size, -(Confidence_limit_Low:GeoLocation)) %>% 
+  spread(., key = Response, value = Data_value) %>% 
+  janitor::clean_names()
+```
+
+`r nrow(tidy_BRFSS)` rows
+`r ncol(tidy_BRFSS)` cols
+
