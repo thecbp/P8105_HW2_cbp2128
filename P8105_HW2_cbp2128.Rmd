@@ -1,5 +1,7 @@
 ---
 title: "R Notebook"
+author: "Christian B Pascual"
+date: "2018-09-28"
 output: github_document
 ---
 
@@ -195,9 +197,70 @@ tidy_BRFSS = raw_BRFSS %>%
   filter(., Topic == "Overall Health") %>% 
   select(., -Class, -Topic, -Question, -Sample_Size, -(Confidence_limit_Low:GeoLocation)) %>% 
   spread(., key = Response, value = Data_value) %>% 
+  mutate(excellently_very_good = Excellent + `Very good`) %>% 
   janitor::clean_names()
 ```
 
-`r nrow(tidy_BRFSS)` rows
-`r ncol(tidy_BRFSS)` cols
+We went from `r nrow(raw_BRFSS)` rows and `r ncol(raw_BRFSS)` columns in the raw BRFSS dataset to `r nrow(tidy_BRFSS)` rows and `r ncol(tidy_BRFSS)` columns in the cleaned dataset. Each `response_value` now has its own column with the `data_value` column populating each cell. On an interesting side note, `spread()` does not work as intended if you try to spread before you remove the large amount of columns in the raw dataset. I suspect it was because there were other unique values in the other columns that produced sparseness if you spread before. 
 
+With this dataset, we can answer Problem 3's questions.
+
+### How many unique locations are included in the dataset? 
+
+There are `r length(unique(tidy_BRFSS$locationdesc))` unique locations included in the dataset.
+
+### Is every state represented? What state is observed the most?
+
+The dataset tells us that there are `r length(unique(tidy_BRFSS$locationabbr))` present, indicating all 50 states including the District of Columbia (state abbreviation: DC).
+
+To get the state with the most observations, we'll need another tibble containing the frequency counts of each state, which we can get with `count()`.
+
+```{r P3_state_counts }
+state_counts = tidy_BRFSS %>% 
+  count(., vars = locationabbr) %>% 
+  arrange(., -n)
+```
+
+After getting the counts and rearranging in descending order, we get that `r slice(state_counts, 1)$vars` is the state with the most observations at `r slice(state_counts, 1)$n` rows.
+
+### In 2002, what is the median of the “Excellent” response value?
+
+The median "Excellent" response value in the dataset is `r median(tidy_BRFSS$excellent, na.rm = TRUE)`%.
+
+### Make a histogram of “Excellent” response values in the year 2002.
+
+```{r P3_2002_excellent_plot }
+BRFSS_2002 = filter(tidy_BRFSS, year == 2002)
+ggplot(BRFSS_2002, aes(x = excellent)) + 
+  geom_histogram(binwidth = 1, color = "black", fill = "white") + 
+  labs(
+    title = "Histogram of Excellent response values in BRFSS Data, 2002",
+    x = "Excellent response value",
+    y = "Frequency count"
+  )
+```
+
+### Make a scatterplot showing the proportion of “Excellent” response values in New York County and Queens County from 2002 to 2010.
+
+First, we'll simplify the dataset to fit our plotting needs better.
+
+```{r P3_ny_vs_queens }
+county_data = tidy_BRFSS %>% 
+  filter(., .$locationdesc == "NY - New York County" | .$locationdesc == "NY - Queens County") %>% 
+  filter(., .$year >= 2000 & .$year <= 2010) %>% 
+  select(., year, county = locationdesc, excellent)
+```
+
+With the proper data selected, we can produce the scatterplot easily.
+
+```{r P3_ny_vs_queens_plot }
+ggplot(county_data, aes(x = year, y = excellent)) +
+  geom_point(aes(color = county)) +
+  labs(
+    title = "Scatterplot of Excellent response values of New York and Queens County, 2002 - 2010",
+    x = "Year",
+    y = "Excellent response value"
+  )
+```
+
+Good thing I go to school in New York County. 
