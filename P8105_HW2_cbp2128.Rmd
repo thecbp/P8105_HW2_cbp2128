@@ -157,7 +157,7 @@ The end result is a tidy dataset that even Mr. Trash Wheel can be proud of.
 
 ## Discussion of the datasets
 
-In its initial form, the Mr. Trash Wheel dataset had `r nrow(raw_trash_data)` rows, but not all of these were true daily observations. After cleaning, the data has `r nrow(tidy_trash_data)` observations. The result is daily information on what kinds of trash Mr. Trash Wheel is picking up. We can see in the `polystyrene` and `sports_balls_int` columns that the machine is always picking up various items that shouldn't be in the river.
+The result is daily information on what kinds of trash Mr. Trash Wheel is picking up. We can see in the `polystyrene` and `sports_balls_int` columns that the machine is always picking up various items that shouldn't be in the river.
 
 In the beginning the 2016 precipitation dataset had `r nrow(precip_2016)` rows, and the 2017 dataset had `r nrow(precip_2017)` rows. After all the data cleaning and manipulation, the resulting preciptation data is `r nrow(tidy_precipitation)` rows and has more descriptive `year` and `month` descriptions. The `total` column gives us the amount of precipitation on a given `year` and `month`.
 
